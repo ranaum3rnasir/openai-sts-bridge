@@ -51,7 +51,7 @@ router.get("/config", async (req, res) => {
     openAiVoice: process.env.REALTIME_VOICE || "cedar",
     hasElevenLabs,
     elevenLabsAgentId: process.env.ELEVENLABS_AGENT_ID || null,
-    publicBaseUrl: process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL || null,
+    publicBaseUrl: process.env.RENDER_EXTERNAL_URL || process.env.PUBLIC_BASE_URL || null,
   });
 });
 
@@ -192,7 +192,11 @@ router.post("/calls/outbound", async (req, res) => {
     });
   }
 
-  const baseUrl = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  // Prefer RENDER_EXTERNAL_URL if deployed on Render so stale local tunnel URLs are ignored
+  let baseUrl = process.env.RENDER_EXTERNAL_URL;
+  if (!baseUrl || baseUrl.includes("localhost")) {
+    baseUrl = process.env.PUBLIC_BASE_URL;
+  }
   if (!baseUrl || baseUrl.includes("localhost") || baseUrl.includes("127.0.0.1")) {
     return res.status(400).json({
       error: `Twilio requires a public HTTPS URL to reach your server. Currently public URL is "${baseUrl || "unset"}". Set PUBLIC_BASE_URL in Settings or deploy to a public cloud like Render.`,

@@ -53,8 +53,11 @@ app.all("/incoming-call", (req, res) => {
   let streamHost = req.headers["x-forwarded-host"] || req.headers.host;
   let protocol = "wss";
 
-  // Use PUBLIC_BASE_URL or Render's RENDER_EXTERNAL_URL so Twilio reaches public host
-  const publicBase = process.env.PUBLIC_BASE_URL || process.env.RENDER_EXTERNAL_URL;
+  // Prefer RENDER_EXTERNAL_URL if on Render, otherwise use PUBLIC_BASE_URL
+  let publicBase = process.env.RENDER_EXTERNAL_URL;
+  if (!publicBase || publicBase.includes("localhost")) {
+    publicBase = process.env.PUBLIC_BASE_URL;
+  }
   if (publicBase) {
     try {
       const parsedBase = new URL(publicBase);
