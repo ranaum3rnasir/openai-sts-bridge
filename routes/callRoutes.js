@@ -259,6 +259,59 @@ router.post("/calls/outbound", async (req, res) => {
   }
 });
 
+// ─── POST /api/calls/:callSid/hangup ─────────────────────────────────────────
+// Hangs up an active Twilio call by callSid
+router.post("/calls/:callSid/hangup", async (req, res) => {
+  const { callSid } = req.params;
+  const twilioClient = getTwilioClient();
+  if (!twilioClient) {
+    return res.status(500).json({ error: "Twilio credentials are not configured." });
+  }
+
+  try {
+    const call = await twilioClient.calls(callSid).update({ status: "completed" });
+    await Call.update({ status: "completed" }, { where: { callSid } });
+    console.log(`[HANGUP_CALL] Call ${callSid} successfully terminated by user.`);
+    res.json({ success: true, callSid: call.sid, status: "completed" });
+  } catch (e) {
+    console.error("[HANGUP_CALL_FAILED]", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// ─── POST /api/calls/hangup ──────────────────────────────────────────────────
+// Fallback hangup endpoint for latest active call
+router.post("/calls/hangup", async (req, res) => {
+  const { callSid } = req.body;
+  const twilioClient = getTwilioClient();
+  if (!twilioClient) {
+    return res.status(500).json({ error: "Twilio credentials are not configured." });
+  }
+
+  try {
+    let targetSid = callSid;
+    if (!targetSid) {
+      const activeCall = await Call.findOne({
+        where: { status: ["initiated", "ringing", "in-progress"] },
+        order: [["createdAt", "DESC"]],
+      });
+      if (activeCall) targetSid = activeCall.callSid;
+    }
+
+    if (!targetSid) {
+      return res.status(400).json({ error: "No active call found to hang up." });
+    }
+
+    const call = await twilioClient.calls(targetSid).update({ status: "completed" });
+    await Call.update({ status: "completed" }, { where: { callSid: targetSid } });
+    console.log(`[HANGUP_CALL] Active call ${targetSid} successfully terminated.`);
+    res.json({ success: true, callSid: targetSid, status: "completed" });
+  } catch (e) {
+    console.error("[HANGUP_CALL_FAILED]", e.message);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 // ─── GET /api/calls ──────────────────────────────────────────────────────────
 // List calls with engine filters & comparison metrics
 router.get("/calls", async (req, res) => {

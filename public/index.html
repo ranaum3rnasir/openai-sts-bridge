@@ -189,9 +189,12 @@
               </select>
             </div>
           </div>
-          <div class="form-footer" style="margin-top: 1rem;">
+          <div class="form-footer" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
             <button type="submit" class="btn btn-primary" id="dialBtn">
               📞 Dial Phone via Twilio
+            </button>
+            <button type="button" class="btn btn-danger hidden" id="hangupBtn">
+              🛑 Hang Up Phone Call
             </button>
             <div id="activeCallBanner" class="active-call-banner hidden">
               <div class="call-pulse"></div>

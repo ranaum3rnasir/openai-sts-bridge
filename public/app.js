@@ -44,6 +44,7 @@ const callLauncherForm = document.getElementById("callLauncherForm");
 const fromPhoneSelect = document.getElementById("fromPhone");
 const toPhoneInput = document.getElementById("toPhone");
 const dialBtn = document.getElementById("dialBtn");
+const hangupBtn = document.getElementById("hangupBtn");
 const activeCallBanner = document.getElementById("activeCallBanner");
 const callStatusText = document.getElementById("callStatusText");
 const callSidLabel = document.getElementById("callSidLabel");
@@ -112,8 +113,9 @@ function setupEventListeners() {
   const injectBtn = document.getElementById("injectTestAudioBtn");
   if (injectBtn) injectBtn.addEventListener("click", injectSampleVoiceAudio);
 
-  // Twilio Form
+  // Twilio Form & Hangup
   callLauncherForm.addEventListener("submit", handleTwilioCallSubmit);
+  if (hangupBtn) hangupBtn.addEventListener("click", handleHangupTwilioCall);
 
   // Filters
   document.querySelectorAll(".filter-btn").forEach((btn) => {
@@ -615,6 +617,9 @@ function cleanUpBrowserCall() {
 }
 
 // ─── MODE 2: Twilio Phone Call (Outbound) ──────────────────────────────────────
+let activeTwilioCallSid = null;
+let callPollingTimer = null;
+
 async function handleTwilioCallSubmit(e) {
   e.preventDefault();
 
@@ -632,6 +637,7 @@ async function handleTwilioCallSubmit(e) {
   dialBtn.disabled = true;
   dialBtn.innerHTML = "⏳ Dialing...";
   activeCallBanner.classList.remove("hidden");
+  if (hangupBtn) hangupBtn.classList.remove("hidden");
   callStatusText.textContent = `Dialing ${to} via ${engine.toUpperCase()}...`;
 
   try {
@@ -644,6 +650,7 @@ async function handleTwilioCallSubmit(e) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Failed to initiate call");
 
+    activeTwilioCallSid = data.callSid;
     callStatusText.textContent = `Status: ${data.status.toUpperCase()}`;
     callSidLabel.textContent = `SID: ${data.callSid.slice(0, 14)}...`;
 
@@ -652,14 +659,59 @@ async function handleTwilioCallSubmit(e) {
   } catch (err) {
     alert(`Twilio call error: ${err.message}`);
     activeCallBanner.classList.add("hidden");
+    if (hangupBtn) hangupBtn.classList.add("hidden");
   } finally {
     dialBtn.disabled = false;
     dialBtn.innerHTML = "📞 Dial Phone via Twilio";
   }
 }
 
+async function handleHangupTwilioCall() {
+  const sid = activeTwilioCallSid;
+  if (hangupBtn) {
+    hangupBtn.disabled = true;
+    hangupBtn.innerHTML = "⏳ Ending...";
+  }
+
+  try {
+    const endpoint = sid ? `/api/calls/${sid}/hangup` : "/api/calls/hangup";
+    const res = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ callSid: sid }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to terminate call");
+
+    if (callPollingTimer) {
+      clearInterval(callPollingTimer);
+      callPollingTimer = null;
+    }
+
+    callStatusText.textContent = "Status: COMPLETED (Hung up)";
+    if (hangupBtn) hangupBtn.classList.add("hidden");
+
+    setTimeout(() => {
+      activeCallBanner.classList.add("hidden");
+    }, 2500);
+
+    activeTwilioCallSid = null;
+    await loadCalls();
+    await loadComparisonStats();
+  } catch (err) {
+    alert(`Hang up failed: ${err.message}`);
+  } finally {
+    if (hangupBtn) {
+      hangupBtn.disabled = false;
+      hangupBtn.innerHTML = "🛑 Hang Up Phone Call";
+    }
+  }
+}
+
 function startCallPolling(callSid) {
-  const timer = setInterval(async () => {
+  if (callPollingTimer) clearInterval(callPollingTimer);
+
+  callPollingTimer = setInterval(async () => {
     try {
       const res = await fetch(`/api/calls/${callSid}`);
       if (!res.ok) return;
@@ -667,16 +719,34 @@ function startCallPolling(callSid) {
 
       callStatusText.textContent = `Status: ${call.status.toUpperCase()}`;
       if (["completed", "failed", "no-answer", "canceled"].includes(call.status)) {
-        clearInterval(timer);
-        activeCallBanner.classList.add("hidden");
+        clearInterval(callPollingTimer);
+        callPollingTimer = null;
+        if (hangupBtn) hangupBtn.classList.add("hidden");
+        setTimeout(() => {
+          activeCallBanner.classList.add("hidden");
+        }, 3000);
+        activeTwilioCallSid = null;
         await loadCalls();
         await loadComparisonStats();
       }
     } catch {
-      clearInterval(timer);
+      clearInterval(callPollingTimer);
+      callPollingTimer = null;
     }
   }, 3000);
 }
+
+window.hangupCallBySid = async function (sid) {
+  if (!confirm(`Hang up call ${sid.slice(0, 10)}...?`)) return;
+  try {
+    const res = await fetch(`/api/calls/${sid}/hangup`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to hang up");
+    await loadCalls();
+  } catch (e) {
+    alert("Hang up error: " + e.message);
+  }
+};
 
 // ─── Config & System Status ───────────────────────────────────────────────────
 async function loadConfig() {
@@ -769,6 +839,11 @@ function renderCalls() {
 
       const ratingStr = call.rating ? "★".repeat(call.rating) : "Not rated";
 
+      const isActive = ["in-progress", "ringing", "initiated"].includes(call.status);
+      const hangupRowBtn = isActive
+        ? `<button class="btn-sm btn-danger" onclick="event.stopPropagation(); hangupCallBySid('${call.callSid}')" style="margin-left: 0.5rem; padding: 2px 8px; font-size: 0.74rem; border-radius: 4px; cursor: pointer;">🛑 Hang Up</button>`
+        : "";
+
       return `
         <div class="call-item" onclick="openCallModal('${call.callSid}')">
           <div class="call-item-left">
@@ -781,6 +856,7 @@ function renderCalls() {
           <div class="call-item-right">
             <span class="text-muted">${durationStr}</span>
             <span class="badge-status badge-${call.status}">${call.status}</span>
+            ${hangupRowBtn}
             <span class="rating-val" style="font-size: 0.85rem;">${ratingStr}</span>
           </div>
         </div>
