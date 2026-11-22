@@ -3,358 +3,279 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Voice AI Benchmark — OpenAI Realtime vs. ElevenLabs STS</title>
+  <title>Voice AI Agent — Servwave</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20261120_2">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20261122_clean">
 </head>
 <body>
-  <!-- Header -->
-  <header class="navbar">
-    <div class="nav-brand">
-      <div class="logo-badge">🎙️</div>
-      <div>
-        <h1 class="logo-title">Voice AI Benchmark</h1>
-        <p class="logo-subtitle">OpenAI Realtime STS vs. ElevenLabs Conversational AI</p>
+  <!-- Top Navigation -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="22"></line>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">Servwave Voice Agent</span>
+          <span class="brand-tag">Realtime Speech-to-Speech</span>
+        </div>
       </div>
-    </div>
-    <div class="nav-actions">
-      <div id="statusPills" class="status-pills">
-        <span class="pill pill-unknown" id="openaiPill">OpenAI: Checking...</span>
-        <span class="pill pill-unknown" id="elevenlabsPill">ElevenLabs: Checking...</span>
-        <span class="pill pill-unknown" id="twilioPill">Twilio: Optional</span>
+
+      <div class="header-controls">
+        <div class="connection-status" id="statusPills">
+          <span class="status-indicator online"></span>
+          <span class="status-text" id="statusSummary">Ready</span>
+          <!-- Hidden compatibility elements for existing status code -->
+          <span class="hidden" id="openaiPill"></span>
+          <span class="hidden" id="elevenlabsPill"></span>
+          <span class="hidden" id="twilioPill"></span>
+        </div>
+        <button type="button" class="btn-icon" id="openSettingsBtn" title="Settings & API Keys">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+          <span>Settings</span>
+        </button>
       </div>
-      <button class="btn btn-secondary" id="openSettingsBtn">⚙️ Settings & Keys</button>
     </div>
   </header>
 
-  <main class="container">
-    <!-- Call Launcher Card -->
-    <section class="card launcher-card">
-      <div class="card-header">
-        <div>
-          <h2>🚀 Launch Comparison Session</h2>
-          <p class="text-muted">Test voice quality, latency, and interruption responsiveness side-by-side.</p>
-        </div>
-
-        <!-- Mode Switcher Tabs -->
-        <div class="mode-tabs">
-          <button type="button" class="mode-tab active" id="tabBrowser" onclick="switchMode('browser')">
-            🎙️ In-Browser Mic (No Tunnel / 100% Localhost)
+  <main class="main-layout">
+    <!-- Main Two-Column Studio Area -->
+    <section class="studio-grid">
+      
+      <!-- Left Column: Controls & Call Trigger -->
+      <div class="card control-card">
+        <!-- Segmented Mode Switcher -->
+        <div class="segmented-control">
+          <button type="button" class="segment-btn active" id="tabBrowser" onclick="switchMode('browser')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+            <span>In-Browser Call</span>
           </button>
-          <button type="button" class="mode-tab" id="tabTwilio" onclick="switchMode('twilio')">
-            📞 Twilio Phone Call
+          <button type="button" class="segment-btn" id="tabTwilio" onclick="switchMode('twilio')">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            <span>Phone Call (Twilio)</span>
           </button>
         </div>
-      </div>
 
-      <!-- Engine Selection Cards -->
-      <div class="form-group full-width" style="margin-bottom: 1.5rem;">
-        <label class="form-label">Select Voice Engine to Compare</label>
-        <div class="engine-cards">
-          <!-- OpenAI Option -->
-          <label class="engine-card active" id="openaiCard">
-            <input type="radio" name="engine" value="openai" checked>
-            <div class="engine-card-header">
-              <div class="engine-icon openai-icon">⚡</div>
-              <div>
-                <h3>OpenAI Realtime</h3>
-                <span class="engine-tag">gpt-realtime</span>
+        <!-- Engine & Voice Selection -->
+        <div class="section-block">
+          <div class="section-label">AI Engine</div>
+          <div class="engine-toggle-grid">
+            <label class="engine-pill active" id="openaiCard">
+              <input type="radio" name="engine" value="openai" checked>
+              <div class="engine-info">
+                <strong>OpenAI Realtime</strong>
+                <span class="engine-sub">gpt-realtime</span>
               </div>
-            </div>
-            <p class="engine-desc">End-to-end speech-to-speech multimodal engine with sub-second response times and server-side VAD.</p>
-            <div class="engine-meta">
-              <span><strong>Voices:</strong> Cedar, Alloy, Echo, Shimmer</span>
-              <span><strong>Latency:</strong> ~600–900ms</span>
-            </div>
-          </label>
-
-          <!-- ElevenLabs Option -->
-          <label class="engine-card" id="elevenlabsCard">
-            <input type="radio" name="engine" value="elevenlabs">
-            <div class="engine-card-header">
-              <div class="engine-icon eleven-icon">💎</div>
-              <div>
-                <h3>ElevenLabs Conversational AI</h3>
-                <span class="engine-tag">ConvAI + Flash/Turbo</span>
+            </label>
+            <label class="engine-pill" id="elevenlabsCard">
+              <input type="radio" name="engine" value="elevenlabs">
+              <div class="engine-info">
+                <strong>ElevenLabs</strong>
+                <span class="engine-sub">Conversational AI</span>
               </div>
-            </div>
-            <p class="engine-desc">Unrivaled voice realism, natural breathing pauses, expressive cadence, and custom cloned voices.</p>
-            <div class="engine-meta">
-              <span><strong>Voices:</strong> Rachel, Drew, Adam, Bella</span>
-              <span><strong>Latency:</strong> ~750–1100ms</span>
-            </div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Common Controls: Voice & Agent -->
-      <div class="form-grid" style="margin-bottom: 1.25rem;">
-        <div class="form-group" id="voiceGroup">
-          <label class="form-label" for="voiceSelect">Assistant Voice</label>
-          <select id="voiceSelect" class="form-select">
-            <option value="cedar">Cedar (Warm, natural male)</option>
-            <option value="alloy">Alloy (Balanced, crisp)</option>
-            <option value="echo">Echo (Warm, clear)</option>
-            <option value="shimmer">Shimmer (Expressive, female)</option>
-            <option value="marin">Marin (Casual, friendly)</option>
-          </select>
-        </div>
-
-        <div class="form-group hidden" id="agentIdGroup">
-          <label class="form-label" for="agentIdInput">ElevenLabs Agent ID</label>
-          <input type="text" id="agentIdInput" class="form-input" placeholder="e.g. agent_abc123 or from console">
-          <span class="form-hint">Found in ElevenLabs Console > Conversational AI</span>
-        </div>
-      </div>
-
-      <!-- ─── MODE 1: In-Browser Microphone (Localhost) ─── -->
-      <div id="browserModePanel" class="mode-panel">
-        <div class="browser-hero-box">
-          <div class="browser-hero-left">
-            <div class="mic-status-indicator" id="micIndicator">
-              <span class="mic-icon">🎙️</span>
-            </div>
-            <div>
-              <h3 id="browserStatusTitle">Ready to talk</h3>
-              <p class="text-muted" id="browserStatusDesc">Talk freely with your computer microphone and headphones. No tunnel or phone required.</p>
-              <div class="mic-level-wrapper" id="micLevelWrapper">
-                <div class="mic-level-label"><span>Mic Activity:</span><span id="micDbLabel">Idle</span></div>
-                <div class="mic-level-track">
-                  <div class="mic-level-bar" id="micLevelBar"></div>
-                </div>
-              </div>
-              <div style="margin-top: 0.6rem;">
-                <label for="micDeviceSelect" style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 3px;">Active Microphone:</label>
-                <select id="micDeviceSelect" class="form-select" style="font-size: 0.78rem; padding: 4px 8px; width: 100%; max-width: 260px;"></select>
-              </div>
-            </div>
-          </div>
-          <div class="browser-hero-actions">
-            <button type="button" class="btn btn-primary btn-lg" id="startBrowserCallBtn">
-              🎙️ Start In-Browser Call
-            </button>
-            <button type="button" class="btn btn-danger btn-lg hidden" id="endBrowserCallBtn">
-              🛑 End Call
-            </button>
-          </div>
-        </div>
-
-        <!-- Live In-Call Session View (shown while call is active) -->
-        <div id="liveSessionView" class="live-session-view hidden">
-          <div class="live-metrics-bar">
-            <span class="live-badge pulse-badge">● LIVE SESSION</span>
-            <span class="metric-chip" id="liveEngineChip">Engine: OpenAI</span>
-            <span class="metric-chip" id="liveLatencyChip">Turnaround: Waiting for speech...</span>
-            <span class="metric-chip" id="liveBargeInChip">Barge-ins: 0</span>
-            <button type="button" class="btn btn-secondary btn-sm" id="injectTestAudioBtn" style="margin-left: auto; font-size: 0.75rem; padding: 3px 8px;">
-              🧪 Simulate Voice Question
-            </button>
+            </label>
           </div>
 
-          <div class="live-transcript-feed" id="liveTranscriptFeed">
-            <div class="feed-placeholder">Start speaking into your mic — live conversation will appear here...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ─── MODE 2: Twilio Phone Call (Optional / Later) ─── -->
-      <div id="twilioModePanel" class="mode-panel hidden">
-        <div class="webhook-guide" style="margin-bottom: 1rem;">
-          <div class="guide-box">
-            <h4>Twilio Phone Webhooks (Optional for Inbound Calls):</h4>
-            <div class="code-copy-row">
-              <code><span class="url-base">http://localhost:3000</span>/incoming-call?engine=openai</code>
-              <button class="btn-sm btn-copy" onclick="copyWebhook('openai')">Copy OpenAI URL</button>
-            </div>
-            <div class="code-copy-row">
-              <code><span class="url-base">http://localhost:3000</span>/incoming-call?engine=elevenlabs</code>
-              <button class="btn-sm btn-copy" onclick="copyWebhook('elevenlabs')">Copy ElevenLabs URL</button>
-            </div>
-          </div>
-        </div>
-
-        <form id="callLauncherForm" class="call-form">
-          <div class="form-grid">
-            <div class="form-group">
-              <label class="form-label" for="toPhone">Destination Phone Number</label>
-              <input type="tel" id="toPhone" class="form-input" placeholder="+1234567890">
-              <span class="form-hint">E.164 format with country code</span>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="fromPhone">Twilio Caller ID</label>
-              <select id="fromPhone" class="form-select">
-                <option value="">Loading Twilio numbers...</option>
+          <div class="field-row">
+            <div class="field-col" id="voiceGroup">
+              <label for="voiceSelect">Voice</label>
+              <select id="voiceSelect" class="form-select">
+                <option value="cedar">Cedar (Warm, natural)</option>
+                <option value="alloy">Alloy (Balanced)</option>
+                <option value="echo">Echo (Clear)</option>
+                <option value="shimmer">Shimmer (Expressive)</option>
+                <option value="marin">Marin (Friendly)</option>
               </select>
             </div>
+
+            <div class="field-col hidden" id="agentIdGroup">
+              <label for="agentIdInput">ElevenLabs Agent ID</label>
+              <input type="text" id="agentIdInput" class="form-input" placeholder="agent_...">
+            </div>
           </div>
-          <div class="form-footer" style="margin-top: 1rem; display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
-            <button type="submit" class="btn btn-primary" id="dialBtn">
-              📞 Dial Phone via Twilio
-            </button>
-            <button type="button" class="btn btn-danger hidden" id="hangupBtn">
-              🛑 Hang Up Phone Call
-            </button>
-            <div id="activeCallBanner" class="active-call-banner hidden">
-              <div class="call-pulse"></div>
-              <div>
-                <strong id="callStatusText">Dialing...</strong>
-                <span id="callSidLabel" class="text-muted"></span>
+        </div>
+
+        <!-- Mode 1: Browser Call Area -->
+        <div id="browserModePanel" class="mode-panel">
+          <div class="call-action-box">
+            <div class="visualizer-wrapper">
+              <div class="pulse-ring" id="micIndicator">
+                <div class="pulse-core">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+                </div>
+              </div>
+              <div class="call-state">
+                <h3 id="browserStatusTitle">Ready to talk</h3>
+                <p id="browserStatusDesc" class="text-muted">Speak directly using your computer mic and speakers.</p>
               </div>
             </div>
-          </div>
-        </form>
-      </div>
-    </section>
 
-    <!-- Side-by-Side Comparison Matrix -->
-    <section class="comparison-section">
-      <div class="section-title-row">
-        <h2>⚡ Side-by-Side Engine Benchmark</h2>
-        <span class="text-muted">Aggregated across all browser and phone sessions</span>
-      </div>
+            <!-- Mic Activity Bar -->
+            <div class="mic-meter-bar" id="micLevelWrapper">
+              <div class="meter-fill" id="micLevelBar"></div>
+              <span class="meter-text" id="micDbLabel">Idle</span>
+            </div>
 
-      <div class="comparison-grid">
-        <!-- OpenAI Column -->
-        <div class="benchmark-card openai-border">
-          <div class="benchmark-header">
-            <div class="engine-tag openai-tag">OpenAI Realtime</div>
-            <h3>GPT-Realtime</h3>
-          </div>
-          <div class="stat-rows">
-            <div class="stat-row">
-              <span class="stat-label">Response Turnaround</span>
-              <span class="stat-val" id="openaiLatency">~720 ms</span>
+            <div class="mic-select-row">
+              <label for="micDeviceSelect">Input:</label>
+              <select id="micDeviceSelect" class="form-select-sm"></select>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Interruption / Barge-in</span>
-              <span class="stat-val" id="openaiBarge">Server VAD cancellation</span>
+
+            <div class="button-row">
+              <button type="button" class="btn btn-primary btn-call" id="startBrowserCallBtn">
+                <span>Start Voice Call</span>
+              </button>
+              <button type="button" class="btn btn-danger btn-call hidden" id="endBrowserCallBtn">
+                <span>End Call</span>
+              </button>
             </div>
-            <div class="stat-row">
-              <span class="stat-label">Speech Naturalness</span>
-              <span class="stat-val">Smooth conversational flow</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Audio Quality</span>
-              <span class="stat-val">High (24 kHz PCM16 / 8 kHz µ-law)</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Sessions Logged</span>
-              <span class="stat-val" id="openaiCallCount">0</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Comparison Rating</span>
-              <span class="stat-val rating-val" id="openaiRating">⭐ —</span>
-            </div>
-          </div>
-          <div class="pros-cons">
-            <div class="pro-tag">✓ Lightning-fast token-to-speech turnaround</div>
-            <div class="pro-tag">✓ Direct end-to-end multimodal reasoning</div>
-            <div class="con-tag">✗ Fixed selection of 9 voices</div>
           </div>
         </div>
 
-        <!-- ElevenLabs Column -->
-        <div class="benchmark-card eleven-border">
-          <div class="benchmark-header">
-            <div class="engine-tag eleven-tag">ElevenLabs ConvAI</div>
-            <h3>Conversational AI Engine</h3>
+        <!-- Mode 2: Phone Call Area -->
+        <div id="twilioModePanel" class="mode-panel hidden">
+          <form id="callLauncherForm" class="phone-dial-box">
+            <div class="form-group">
+              <label for="toPhone">Destination Phone Number</label>
+              <input type="tel" id="toPhone" class="form-input" placeholder="+16263239523" required>
+            </div>
+
+            <div class="form-group">
+              <label for="fromPhone">Twilio Caller ID</label>
+              <select id="fromPhone" class="form-select">
+                <option value="">Loading Twilio caller ID...</option>
+              </select>
+            </div>
+
+            <div class="button-row" style="margin-top: 1.5rem;">
+              <button type="submit" class="btn btn-primary btn-call" id="dialBtn">
+                <span>Dial Phone</span>
+              </button>
+              <button type="button" class="btn btn-danger btn-call hidden" id="hangupBtn">
+                <span>Hang Up</span>
+              </button>
+            </div>
+
+            <div id="activeCallBanner" class="active-call-badge hidden">
+              <span class="ping-dot"></span>
+              <span id="callStatusText">Dialing...</span>
+              <span id="callSidLabel" class="call-sid-muted"></span>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right Column: Live Conversation Transcript -->
+      <div class="card transcript-card">
+        <div class="transcript-header">
+          <div class="transcript-title">
+            <span class="header-dot"></span>
+            <h3>Live Conversation Feed</h3>
           </div>
-          <div class="stat-rows">
-            <div class="stat-row">
-              <span class="stat-label">Response Turnaround</span>
-              <span class="stat-val" id="elevenLatency">~860 ms</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Interruption / Barge-in</span>
-              <span class="stat-val" id="elevenBarge">Server-side Interruption Event</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Speech Naturalness</span>
-              <span class="stat-val">Ultra-realistic (Emotional inflection & breath)</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Audio Quality</span>
-              <span class="stat-val">Crystal clear studio acoustics</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Sessions Logged</span>
-              <span class="stat-val" id="elevenCallCount">0</span>
-            </div>
-            <div class="stat-row">
-              <span class="stat-label">Comparison Rating</span>
-              <span class="stat-val rating-val" id="elevenRating">⭐ —</span>
-            </div>
+          <div class="live-chips" id="liveSessionView">
+            <span class="chip chip-engine" id="liveEngineChip">OpenAI</span>
+            <span class="chip" id="liveLatencyChip">—</span>
+            <span class="hidden" id="liveBargeInChip">0</span>
+            <button type="button" class="btn-text hidden" id="injectTestAudioBtn">Test Voice</button>
           </div>
-          <div class="pros-cons">
-            <div class="pro-tag">✓ Unrivaled human-like voice expressiveness</div>
-            <div class="pro-tag">✓ Custom voice cloning & 1000+ voice library</div>
-            <div class="con-tag">✗ Requires an ElevenLabs Agent ID</div>
+        </div>
+
+        <div class="transcript-stream" id="liveTranscriptFeed">
+          <div class="stream-empty">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <p>Start a call to see live transcriptions and Sarah's responses here in real time.</p>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Call Logs & History -->
-    <section class="card logs-card">
-      <div class="card-header">
+    <!-- Bottom Section: Recent Sessions History -->
+    <section class="card history-card">
+      <div class="history-header">
         <div>
-          <h2>📜 Session History & Deep-Dive Transcripts</h2>
-          <p class="text-muted">Review transcripts, listen to recordings, and score voice performance.</p>
+          <h3>Call History & Sessions</h3>
+          <span class="text-muted">Recorded voice calls, durations, and transcripts</span>
         </div>
-        <div class="filter-group">
-          <button class="filter-btn active" data-filter="all">All</button>
-          <button class="filter-btn" data-filter="openai">OpenAI</button>
-          <button class="filter-btn" data-filter="elevenlabs">ElevenLabs</button>
-          <button class="btn btn-sm btn-secondary" id="refreshCallsBtn">🔄 Refresh</button>
+        <div class="history-actions">
+          <div class="filter-pills">
+            <button type="button" class="filter-btn active" data-filter="all">All</button>
+            <button type="button" class="filter-btn" data-filter="openai">OpenAI</button>
+            <button type="button" class="filter-btn" data-filter="elevenlabs">ElevenLabs</button>
+          </div>
+          <button type="button" class="btn-icon-subtle" id="refreshCallsBtn" title="Refresh">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M3 21v-5h5"></path></svg>
+          </button>
         </div>
       </div>
 
-      <div class="call-list" id="callList">
-        <div class="empty-state">Loading sessions...</div>
+      <div class="call-list-wrap">
+        <div id="callList" class="call-list">
+          <div class="empty-state">Loading call records...</div>
+        </div>
       </div>
     </section>
   </main>
 
-  <!-- Call Detail & Transcript Modal -->
+  <!-- Call Detail Modal -->
   <div class="modal hidden" id="callDetailModal">
     <div class="modal-backdrop" id="modalBackdrop"></div>
     <div class="modal-dialog">
       <div class="modal-header">
         <div>
-          <h3 id="modalTitle">Session Details</h3>
-          <span class="badge" id="modalEngineBadge">Engine</span>
+          <h3 id="modalTitle">Call Details</h3>
+          <span id="modalPhone" class="modal-sub"></span>
         </div>
         <button class="btn-close" id="closeModalBtn">&times;</button>
       </div>
+
       <div class="modal-body">
-        <div class="recording-player-box hidden" id="recordingPlayerBox">
-          <label class="form-label">🔊 Call Audio Recording</label>
-          <audio id="audioPlayer" controls class="audio-control"></audio>
-        </div>
-
-        <div class="summary-box">
-          <h4>AI Call Summary</h4>
-          <p id="modalSummary" class="summary-text">No summary recorded.</p>
-        </div>
-
-        <div class="transcript-box">
-          <h4>Full Conversation Transcript</h4>
-          <div class="chat-bubbles" id="modalChatBubbles"></div>
-        </div>
-
-        <div class="feedback-box">
-          <h4>Rate & Compare This Session</h4>
-          <div class="rating-stars" id="starRating">
-            <span class="star" data-val="1">★</span>
-            <span class="star" data-val="2">★</span>
-            <span class="star" data-val="3">★</span>
-            <span class="star" data-val="4">★</span>
-            <span class="star" data-val="5">★</span>
+        <div class="modal-meta-grid">
+          <div class="meta-item">
+            <span class="meta-label">Engine</span>
+            <span id="modalEngineBadge" class="badge">—</span>
           </div>
-          <textarea id="feedbackNotes" class="form-textarea" placeholder="Add comparison notes (e.g. latency, voice warmth, pronunciation, interruption speed)..."></textarea>
-          <button class="btn btn-primary btn-sm" id="saveFeedbackBtn">Save Rating & Notes</button>
+          <div class="meta-item">
+            <span class="meta-label">Duration</span>
+            <strong id="modalDuration">—</strong>
+          </div>
+          <div class="meta-item hidden">
+            <strong id="modalCost">—</strong>
+          </div>
+        </div>
+
+        <div id="recordingPlayerBox" class="audio-player-box hidden">
+          <label>Audio Recording</label>
+          <audio id="audioPlayer" controls style="width: 100%; margin-top: 6px;"></audio>
+        </div>
+
+        <div class="modal-summary-box">
+          <label>Executive Summary</label>
+          <p id="modalSummary" class="modal-summary-text">—</p>
+        </div>
+
+        <div class="modal-transcript-box">
+          <label>Full Call Transcript</label>
+          <div id="modalChatBubbles" class="transcript-bubbles"></div>
+        </div>
+
+        <!-- Feedback & Rating -->
+        <div class="modal-feedback-section">
+          <label>Session Rating</label>
+          <div id="starRating" class="star-rating">
+            <span class="star" data-val="1">★</span><span class="star" data-val="2">★</span>
+            <span class="star" data-val="3">★</span><span class="star" data-val="4">★</span><span class="star" data-val="5">★</span>
+          </div>
+          <textarea id="feedbackNotes" placeholder="Optional notes about audio latency or quality..." rows="2" style="margin-top: 8px; width: 100%;"></textarea>
+          <button id="saveFeedbackBtn" class="btn btn-secondary btn-sm" style="margin-top: 6px;">Save Rating & Notes</button>
         </div>
       </div>
     </div>
@@ -365,63 +286,67 @@
     <div class="modal-backdrop" id="settingsBackdrop"></div>
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3>⚙️ Telephony & AI Credentials</h3>
+        <h3>Configuration & API Credentials</h3>
         <button class="btn-close" id="closeSettingsBtn">&times;</button>
       </div>
       <div class="modal-body">
         <form id="settingsForm">
-          <h4 class="settings-section-title">OpenAI Realtime Credentials</h4>
-          <div class="form-group">
-            <label class="form-label" for="cfgOpenAiKey">OpenAI API Key</label>
-            <input type="password" id="cfgOpenAiKey" class="form-input" placeholder="sk-...">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="cfgOpenAiModel">Realtime Model</label>
-            <select id="cfgOpenAiModel" class="form-select">
-              <option value="gpt-realtime">gpt-realtime (GA Realtime API)</option>
-              <option value="gpt-4o-realtime-preview">gpt-4o-realtime-preview</option>
-              <option value="gpt-4o-mini-realtime-preview">gpt-4o-mini-realtime-preview</option>
-            </select>
-            <span class="form-hint">Tip: If you see 'model_not_found', your OpenAI key may be on free tier or requires Tier 1 ($5 deposit). Try gpt-4o-mini-realtime-preview!</span>
-          </div>
-
-          <h4 class="settings-section-title">ElevenLabs Credentials</h4>
-          <div class="form-group">
-            <label class="form-label" for="cfgElevenKey">ElevenLabs API Key</label>
-            <input type="password" id="cfgElevenKey" class="form-input" placeholder="xi-api-key...">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="cfgElevenAgent">ElevenLabs Conversational AI Agent ID</label>
-            <input type="text" id="cfgElevenAgent" class="form-input" placeholder="e.g. your_agent_id_from_convai">
-            <span class="form-hint">Create or find your agent under Conversational AI in the ElevenLabs Console.</span>
+          <div class="settings-group">
+            <h4 class="settings-title">OpenAI Realtime API</h4>
+            <div class="form-group">
+              <label for="cfgOpenAiKey">API Key</label>
+              <input type="password" id="cfgOpenAiKey" class="form-input" placeholder="sk-...">
+            </div>
+            <div class="form-group">
+              <label for="cfgOpenAiModel">Realtime Model</label>
+              <select id="cfgOpenAiModel" class="form-select">
+                <option value="gpt-realtime">gpt-realtime</option>
+                <option value="gpt-4o-realtime-preview">gpt-4o-realtime-preview</option>
+                <option value="gpt-4o-mini-realtime-preview">gpt-4o-mini-realtime-preview</option>
+              </select>
+            </div>
           </div>
 
-          <h4 class="settings-section-title">Twilio Phone Settings (Optional)</h4>
-          <div class="form-group">
-            <label class="form-label" for="cfgTwilioSid">Twilio Account SID</label>
-            <input type="text" id="cfgTwilioSid" class="form-input" placeholder="ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="cfgTwilioToken">Twilio Auth Token</label>
-            <input type="password" id="cfgTwilioToken" class="form-input" placeholder="Your Twilio Auth Token">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="cfgTwilioPhone">Default Twilio Phone Number</label>
-            <input type="text" id="cfgTwilioPhone" class="form-input" placeholder="+18005559999">
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="cfgPublicUrl">Public Base URL (If using Twilio)</label>
-            <input type="text" id="cfgPublicUrl" class="form-input" placeholder="https://xxxx.trycloudflare.com">
+          <div class="settings-group">
+            <h4 class="settings-title">ElevenLabs Conversational AI</h4>
+            <div class="form-group">
+              <label for="cfgElevenKey">API Key</label>
+              <input type="password" id="cfgElevenKey" class="form-input" placeholder="xi-api-key...">
+            </div>
+            <div class="form-group">
+              <label for="cfgElevenAgent">Agent ID</label>
+              <input type="text" id="cfgElevenAgent" class="form-input" placeholder="agent_...">
+            </div>
           </div>
 
-          <div class="settings-modal-actions">
-            <button type="submit" class="btn btn-primary">Save Settings</button>
+          <div class="settings-group">
+            <h4 class="settings-title">Twilio Telephony</h4>
+            <div class="form-group">
+              <label for="cfgTwilioSid">Account SID</label>
+              <input type="text" id="cfgTwilioSid" class="form-input" placeholder="AC...">
+            </div>
+            <div class="form-group">
+              <label for="cfgTwilioToken">Auth Token</label>
+              <input type="password" id="cfgTwilioToken" class="form-input" placeholder="Auth Token">
+            </div>
+            <div class="form-group">
+              <label for="cfgTwilioPhone">Caller ID</label>
+              <input type="text" id="cfgTwilioPhone" class="form-input" placeholder="+1...">
+            </div>
+            <div class="form-group">
+              <label for="cfgPublicUrl">Public Base URL</label>
+              <input type="text" id="cfgPublicUrl" class="form-input" placeholder="https://your-service.onrender.com">
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Save Credentials</button>
           </div>
         </form>
       </div>
     </div>
   </div>
 
-  <script src="app.js?v=20261120_2"></script>
+  <script src="app.js?v=20261122_clean"></script>
 </body>
 </html>

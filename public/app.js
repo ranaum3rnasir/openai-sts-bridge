@@ -867,30 +867,47 @@ function renderCalls() {
 
 async function loadComparisonStats() {
   try {
+    const openaiLatEl = document.getElementById("openaiLatency");
+    if (!openaiLatEl) return;
+
     const res = await fetch("/api/calls/stats/comparison");
     const stats = await res.json();
 
-    document.getElementById("openaiLatency").textContent = stats.openai.avgLatencyMs
+    openaiLatEl.textContent = stats.openai.avgLatencyMs
       ? `${stats.openai.avgLatencyMs} ms`
       : "~720 ms";
-    document.getElementById("openaiBarge").textContent = stats.openai.avgBargeIn
-      ? `${stats.openai.avgBargeIn} per session`
-      : "Server VAD cancellation";
-    document.getElementById("openaiCallCount").textContent = stats.openai.totalCalls;
-    document.getElementById("openaiRating").textContent = stats.openai.avgRating
-      ? `⭐ ${stats.openai.avgRating} / 5`
-      : "⭐ —";
+    if (document.getElementById("openaiBarge")) {
+      document.getElementById("openaiBarge").textContent = stats.openai.avgBargeIn
+        ? `${stats.openai.avgBargeIn} per session`
+        : "Server VAD cancellation";
+    }
+    if (document.getElementById("openaiCallCount")) {
+      document.getElementById("openaiCallCount").textContent = stats.openai.totalCalls;
+    }
+    if (document.getElementById("openaiRating")) {
+      document.getElementById("openaiRating").textContent = stats.openai.avgRating
+        ? `⭐ ${stats.openai.avgRating} / 5`
+        : "⭐ —";
+    }
 
-    document.getElementById("elevenLatency").textContent = stats.elevenlabs.avgLatencyMs
-      ? `${stats.elevenlabs.avgLatencyMs} ms`
-      : "~860 ms";
-    document.getElementById("elevenBarge").textContent = stats.elevenlabs.avgBargeIn
-      ? `${stats.elevenlabs.avgBargeIn} per session`
-      : "Server-side Interruption Event";
-    document.getElementById("elevenCallCount").textContent = stats.elevenlabs.totalCalls;
-    document.getElementById("elevenRating").textContent = stats.elevenlabs.avgRating
-      ? `⭐ ${stats.elevenlabs.avgRating} / 5`
-      : "⭐ —";
+    if (document.getElementById("elevenLatency")) {
+      document.getElementById("elevenLatency").textContent = stats.elevenlabs.avgLatencyMs
+        ? `${stats.elevenlabs.avgLatencyMs} ms`
+        : "~860 ms";
+    }
+    if (document.getElementById("elevenBarge")) {
+      document.getElementById("elevenBarge").textContent = stats.elevenlabs.avgBargeIn
+        ? `${stats.elevenlabs.avgBargeIn} per session`
+        : "Server-side Interruption Event";
+    }
+    if (document.getElementById("elevenCallCount")) {
+      document.getElementById("elevenCallCount").textContent = stats.elevenlabs.totalCalls;
+    }
+    if (document.getElementById("elevenRating")) {
+      document.getElementById("elevenRating").textContent = stats.elevenlabs.avgRating
+        ? `⭐ ${stats.elevenlabs.avgRating} / 5`
+        : "⭐ —";
+    }
   } catch (e) {
     console.error("Stats fetch error:", e);
   }
